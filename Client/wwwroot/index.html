@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>BlazorApp</title>
+    <base href="/" />
+    <link href="css/bootstrap/bootstrap.min.css" rel="stylesheet" />
+    <link href="css/app.css" rel="stylesheet" />
+    <link href="BlazorApp.Client.styles.css" rel="stylesheet" />
+    <link href="manifest.json" rel="manifest" />
+    <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png" />
+    <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png" />
+</head>
+
+<body>
+    <div id="app">Loading...</div>
+
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">🗙</a>
+    </div>
+    <script src="_framework/blazor.webassembly.js"></script>
+    <script>
+        navigator.serviceWorker.register('service-worker.js');
+                
+        var mediaRecorder;
+        var AudioBase;
+        window.StartRecord = () => {           
+            navigator.getUserMedia = (navigator.getUserMedia ||
+                navigator.mozGetUserMedia ||
+                navigator.msGetUserMedia ||
+                navigator.webkitGetUserMedia);
+            if (navigator.getUserMedia) {
+                console.log('getUserMedia supported.');
+                var constraints = { audio: true };
+                
+                var onSuccess = function (stream) {
+                    mediaRecorder = new MediaRecorder(stream);
+                    mediaRecorder.start();
+                }
+                var onError = function (err) {
+                    console.log('The following error occured: ' + err);
+                }
+
+                navigator.getUserMedia(constraints, onSuccess, onError);
+            } else {
+                console.log('getUserMedia not supported on your browser!');
+            }
+
+        };
+
+        window.StopRecord = () => {
+            if (mediaRecorder)
+            return new Promise((resolve, reject) => {
+                mediaRecorder.stop();
+                mediaRecorder.ondataavailable = (e) => resolve(e.data);
+            }).then(d => {
+                return new Promise((resolve, reject) => {
+                    var fileReader = new FileReader();
+                    fileReader.onload = (event) => resolve(event.target.result);                   
+                    fileReader.readAsDataURL(d);
+                });
+            });            
+        };
+
+        window.ViewDiv = (id) => {
+            document.querySelector(id).classList.toggle("show");
+        }
+        
+
+    </script>
+</body>
+
+</html>

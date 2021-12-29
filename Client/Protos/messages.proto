@@ -1,0 +1,40 @@
+﻿syntax="proto3";
+
+option csharp_namespace="ServiceGrpc";
+
+package BlazorApp;
+
+
+service MessageContext{
+	rpc GetMessag(Param) returns (MessageModel);
+	rpc SaveMesage (MessageModel) returns (Param);
+	rpc GetMessages(Param) returns (Messages);
+	rpc SaveFile(FileBase) returns (Empty);
+	rpc Delete(Param) returns (Param);
+}
+
+message Empty{
+
+}
+
+message FileBase{
+	string file=1;
+	int32 id=2;
+}
+
+message Param{
+	string sort=1;
+	int32 id=2;
+	bool sortBy=3;
+	string style=4;
+}
+
+message MessageModel{
+	int32 id=1;
+	string message=2;
+	string urlFile=3;
+}
+
+message Messages{
+	repeated MessageModel items = 1;
+}

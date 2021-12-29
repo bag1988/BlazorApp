@@ -1,0 +1,20 @@
+﻿
+
+<div class="mb-3">
+    <button class="btn btn-link" @onclick="@(()=>SortTable.InvokeAsync(new Dictionary<string,string>{{"sort","message"}}))" type="submit"><span class="oi @(Sort?.SortBy==true?"oi-arrow-top":"oi-arrow-bottom") " aria-hidden="true"></span> Сортировать по алфавиту</button>
+    <button class="btn btn-link" @onclick="@(()=>SortTable.InvokeAsync(new Dictionary<string,string>{{"style",(Sort?.Style=="table-dark"?"":"table-dark")}}))" type="submit">Темная таблица</button>
+    <NavLink class="btn btn-link" href="savemessage">
+        <span class="oi oi-plus" aria-hidden="true"></span> Добавить сообщение
+    </NavLink>
+
+</div>
+
+
+@code {
+    [Parameter]
+    public EventCallback<Dictionary<string, string>> SortTable { get; set; }
+
+    [CascadingParameter]
+    public Param? Sort { get; set; }
+
+}

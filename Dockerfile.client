@@ -1,0 +1,10 @@
+FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
+WORKDIR /app
+COPY Client/ .
+RUN dotnet publish -c Release -o output
+
+FROM nginx:1.21.4-alpine
+WORKDIR /var/www/web
+COPY --from=build /app/output/wwwroot .
+COPY Client/nginx.conf /etc/nginx/nginx.conf
+EXPOSE 443

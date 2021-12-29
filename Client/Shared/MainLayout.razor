@@ -1,0 +1,65 @@
+﻿@using BlazorApp.Client.Pages
+@inherits LayoutComponentBase
+@inject IJSRuntime js
+<div class="page">
+    <main>
+        <article class="content px-4">
+            <div class="accordion">
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button" type="button" @onclick="@(()=>js.InvokeVoidAsync("ViewDiv","#param"))">
+                            Параметры
+                        </button>
+                    </h2>
+                    <div id="param" class="accordion-collapse collapse show">
+                        <div class="accordion-body">
+                            <CascadingValue Value="Sort">
+                                <ParamView SortTable="SetParam"></ParamView>
+                            </CascadingValue>
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button" type="button" @onclick="@(()=>js.InvokeVoidAsync("ViewDiv","#table"))">
+                            Отчет
+                        </button>
+                    </h2>
+                    <div id="table" class="accordion-collapse collapse show">
+                        <div class="accordion-body">
+                            <CascadingValue Value="Sort">
+                                @Body
+                            </CascadingValue>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </article>
+    </main>
+</div>
+@code
+{
+    public Param Sort = new Param { Sort = "Message", SortBy = true };
+
+
+    private void SetParam(Dictionary<string, string> e)
+    {
+        foreach (var d in e)
+        {
+            if (d.Value!=null && Sort.GetType().GetProperties().Any(x => x.Name.ToLower() == d.Key.ToLower()))
+            {
+                var prop = Sort.GetType().GetProperties().Single(x => x.Name.ToLower() == d.Key.ToLower());
+                var t = Nullable.GetUnderlyingType(prop.PropertyType) ?? prop.PropertyType;
+                if (d.Key.ToLower() == "sort" && d.Value.ToLower() == Sort.Sort.ToLower())
+                    Sort.SortBy = Sort.SortBy == true ? false : true;
+                else
+                    prop.SetValue(Sort, Convert.ChangeType(d.Value, t));
+
+            }
+
+        }
+       
+        OnInitialized();
+    }
+
+}

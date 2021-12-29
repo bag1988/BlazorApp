@@ -1,0 +1,88 @@
+﻿@page "/savemessage"
+@page "/savemessage/{IdMessage:int}"
+
+@inject IJSRuntime js
+@inject MessageContext.MessageContextClient m
+@inject Microsoft.Extensions.Configuration.IConfiguration config
+@inject NavigationManager NavigationManager
+
+
+
+@if (model.Id == 0)
+{
+    <PageTitle>Добавить запись</PageTitle>
+    <h2>Добавить запись</h2>
+}
+else
+{
+    <PageTitle>Редактировать запись № @IdMessage</PageTitle>
+    <h2>Редактировать запись № @IdMessage</h2>
+}
+<EditForm Model="@model" OnValidSubmit="@SaveMessages">
+
+    <div class="mb-3">
+        <label for="Message" class="form-label">Сообщение</label>
+        <InputTextArea class="form-control" id="Message" @bind-Value="model.Message" />
+    </div>
+    <div class="mb-3">
+        @if (!string.IsNullOrEmpty(model.UrlFile)||!string.IsNullOrEmpty(blob))
+        {
+
+            <audio class="w-100" controls="controls">
+                <source src="@(string.IsNullOrEmpty(blob)?(config["ServerUrl"]+"/wav/"+model.UrlFile):blob)" type="audio/wav">
+                Ваш браузер не поддерживает элемент
+                <code>audio</code>.
+            </audio>
+        }
+        
+    </div>
+    <button class="btn btn-success" type="submit">Сохранить</button>
+     <NavLink class="btn btn-link" href="/">Список</NavLink>
+     <button class="btn @(records?"btn-info":"btn-danger") " type="button" @onclick="()=>(records?StartRecord():StopRecord())">@(records?"Запись аудио сообщения":"Стоп")</button>
+</EditForm>
+
+
+
+
+@code {
+
+    [Parameter]
+    public int? IdMessage { get; set; }
+
+    private bool records { get; set; } = true;
+
+    private string? blob { get; set; }
+
+    private MessageModel model = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (IdMessage != null)
+        {
+            model = await m.GetMessagAsync(new Param { Id = IdMessage.Value });
+        }
+
+    }
+
+    private async Task SaveMessages()
+    {
+        var p = await m.SaveMesageAsync(model);
+        if (!string.IsNullOrEmpty(blob))
+            await m.SaveFileAsync(new FileBase { File = blob?.Split(",")[1], Id = p.Id });
+        NavigationManager.NavigateTo("/");
+    }
+
+    protected async Task StartRecord()
+    {
+        records = false;
+        await js.InvokeVoidAsync("StartRecord");        
+    }
+
+    protected async Task StopRecord()
+    {
+        records = true;        
+        blob = await js.InvokeAsync<string>("StopRecord");        
+        StateHasChanged();
+    }
+
+}
